@@ -1,9 +1,9 @@
 const express = require('express');
-const server = express();  // creat server
+const user = express();  // creat server
 const mongoose = require('mongoose');
-const port = 3333;
+const port = 4444;
 const morgan = require('morgan');
-const productRoutes = require('./routes/product.routes');
+const userRoutes = require('./routes/user.routes');
 
 // db connection
 async function main(){
@@ -16,11 +16,11 @@ main().then(()=>{
 });
 
 // //middlware
-server.use(morgan('dev'))
-server.use(express.json());
+user.use(morgan('dev'))
+user.use(express.json());
 
-server.use('/product',productRoutes);
+user.use('/user',userRoutes);
 
-server.listen(port,()=>{
+user.listen(port,()=>{
     console.log(`server start at ${port}.`)
 })

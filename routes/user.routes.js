@@ -5,10 +5,16 @@ const {
     getAlluser,
     getuser,
     updateuser,
-    deleteuser
+    deleteuser,
+    signUp,
+    login
 } = require('../controller/user.controller');
-    
-userRoutes.post('/', addNewUser);
+
+userRoutes.post('/signup',signUp);
+
+userRoutes.post('/login',login);
+
+userRoutes.post('/addnewuser', addNewUser);
 
 userRoutes.get('/',getAlluser);
 

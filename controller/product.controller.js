@@ -3,14 +3,14 @@ const Product = require("../model/product.model");
 
 exports.addNewProduct = async (req, res) => {
   try {
-    let { title, description, price, category, brand } = req.body;
+    let { title, discription, price, category, brand } = req.body;
     let product = await Product.findOne({ title: title, isDelete : false });
     if (product) {
       return res.json({ messge: "Poduct is alredy exist..." });
     }
     product = await Product.create({
       title,
-      description,
+      discription,
       price,
       category,
       brand,

@@ -1,26 +1,24 @@
 const express = require('express');
 const userRoutes = express.Router();
+const { verifyToken } = require('../helpers/tokenverfiy');
 const {
-    addNewUser,
-    getAlluser,
-    getuser,
     updateuser,
     deleteuser,
     signUp,
-    login
+    login,
+    getuser,
+    updatepassword
 } = require('../controller/user.controller');
 
 userRoutes.post('/signup',signUp);
 
 userRoutes.post('/login',login);
 
-userRoutes.post('/addnewuser', addNewUser);
+userRoutes.get('/profile',verifyToken,getuser);
 
-userRoutes.get('/',getAlluser);
+userRoutes.put('/Update-profile' , verifyToken,updateuser)
 
-userRoutes.get('/:id',getuser);
-
-userRoutes.patch('/:id',updateuser);
+userRoutes.put('/updatepassword' , verifyToken,updatepassword)
 
 userRoutes.delete('/:id',deleteuser);
 

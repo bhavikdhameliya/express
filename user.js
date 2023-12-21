@@ -4,7 +4,10 @@ const user = express();  // creat server
 const mongoose = require('mongoose');
 const port = process.env.PORT;
 const morgan = require('morgan');
+
 const userRoutes = require('./routes/user.routes');
+const productRoutes = require('./routes/product.routes');
+const cartRoutes = require('./routes/cart.routes')
 
 // db connection
 async function main(){
@@ -16,12 +19,13 @@ main().then(()=>{
     console.log(err);
 });
 
-// //middlware
+// //middlware 
 user.use(morgan('dev'))
 user.use(express.json());
 
 user.use('/api/user',userRoutes);
-user.use('/user',userRoutes)
+user.use('/api/product',productRoutes)
+user.use('/api/cart',cartRoutes)
 
 
 user.listen(port,()=>{

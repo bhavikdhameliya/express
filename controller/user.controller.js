@@ -1,6 +1,7 @@
 // const User = require('../public/User.json');
 const User = require("../model/user.model");
 const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 //user2 data
 exports.signUp = async (req, res) => {
@@ -14,7 +15,7 @@ exports.signUp = async (req, res) => {
     console.log(hashPassword);
     user = await User.create({
       fristName , lastName , email , 
-      password: hashPassword , 
+      password: hashPassword ,  
       gender   
     });
    user.save();
@@ -37,53 +38,21 @@ exports.login = async(req ,res) =>{
     if(!checkpassword){
       return res.json({message : "password is not match "});
     }
-    res.status(200).json(user)
+    let payload = {
+      userId: user._id
+    }
+    let token = jwt.sign(payload , process.env.SECRET_KEY);
+    res.status(200).json({token , message: 'login sucess'});
   }catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error..." });
   }
-}
-
-// user data 
-
-exports.addNewUser = async (req, res) => {
-  try {
-    let { title, description, price, category, brand } = req.body;
-    let user = await User.findOne({ title: title, isDelete : false });
-    if (user) {
-      return res.json({ messge: "Poduct is alredy exist..." });
-    }
-    user = await User.create({
-      title,
-      description,
-      price,
-      category,
-      brand,
-    });
-
-    user.save();
-    res.json({ message: "User is Added.", user });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Internal Server Error..." });
-  }
 };
 
-exports.getAlluser = async (req, res) => {
+exports.getuser = async (req, res) => { 
   try {
-    let users = await User.find({ isDelete: false });
-    res.json(users);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ Message: "Internal Server errrer...." });
-  }
-};
-
-exports.getuser = async (req, res) => {
-  try {
-    let id = req.params.id;
-    let users = await User.findById(id);
-    res.json(users);
+   
+    res.json(req.user);
   } catch (err) {
     console.log(err);
     res.status(500).json({ Message: "Internal Server errrer...." });
@@ -92,27 +61,38 @@ exports.getuser = async (req, res) => {
 
 exports.updateuser = async (req, res) => {
   try {
-    let id = req.params.id;
-    letuUser = await User.findById(id, { isDelete: false });
-    if (!user) {
-      return res.json({ Message: "User is not found...." });
-    }
-    user = await User.findByIdAndUpdate(
-      { _id: id },
-      {
-        $set: { ...req.body },
-      },
-      {
-        new: true,
-      }
-    );
-    user.save();
-    res.json({ Message: "User is update....", user });
+   let user = await User.findByIdAndUpdate(req.user._id,{ $set: { ...req.body }},{new: true})
+    res.status(200).json({ user , Message: "User is update...." });
   } catch (err) {
     console.log(err);
     res.status(500).json({ Message: "Internal Server errrer...." });
   }
 };
+
+exports.updatepassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.json({ Message: "User not found" });
+    }
+    if (!oldPassword || !newPassword) {
+      return res.json({ Message: "Both oldPassword and newPassword are required" });
+    }
+    const checkOldPassword = await bcrypt.compare(oldPassword, user.password);
+    if (!checkOldPassword) {
+      return res.json({ Message: "Old password is incorrect" });
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+    await user.save();
+    res.status(200).json({ Message: "Password updated successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ Message: "Internal Server error" });
+  }
+};
+
 
 exports.deleteuser = async (req, res) => {
   try {

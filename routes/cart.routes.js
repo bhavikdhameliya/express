@@ -1,12 +1,18 @@
-const express  = require('express');
-const cartRoutes = express.Router();
-const { verifyToken } = require('../helpers/tokenverfiy');
-const { addToCart ,getAllCarts ,getCarts, updateCart , deleteCart } = require('../controller/cart.controller');
+const express = require('express');
+const cartRoute = express.Router();
+const {verifyToken} = require('../helpers/tokenverfiy');
+const {
+    addToCart,
+    getallCarts,
+    getCart,
+    update,
+    deleteCart
+} = require('../controller/cart.controller')
 
-cartRoutes.post('/add-cart',verifyToken,addToCart);
-cartRoutes.get('/all-carts',verifyToken,getAllCarts);
-cartRoutes.get('/get-cart',verifyToken,getCarts);
-cartRoutes.put('/update-cart',verifyToken,updateCart);
-cartRoutes.delete('/delete-cart',verifyToken,deleteCart);
+cartRoute.post('/addcart', verifyToken, addToCart);
+cartRoute.get('/allcarts', verifyToken, getallCarts);
+cartRoute.get('/getcart', verifyToken, getCart);
+cartRoute.put('/update', verifyToken, update);
+cartRoute.delete('/delete', verifyToken, deleteCart);
 
-module.exports = cartRoutes;
+module.exports = cartRoute;

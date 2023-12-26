@@ -1,101 +1,101 @@
-const { default: mongoose } = require('mongoose');
-const Cart = require('../model/cart.model');
+const { mongoose } = require('mongoose');
+const cartModel = require('../model/cart.model');
+const productModel = require('../model/product.model');
 
-exports.addToCart = async ( req , res )=> {
-    try {
-        const {cartItem , quantity}= req.body
-        let isCart = await Cart.findOne({cartItem : cartItem,user: req.user._id});
-        if(isCart)
-        {
-            return res.json({Message : 'cart item is alredy exit.....'});
-        }
-    isCart = await Cart.create({
-            user : req.user._id,
-            cartItem , quantity
-        });
-        isCart.save();
-        res.status(202).json({cart: isCart, message:'cart added sucess'});
-    }catch (error) {
-        console.log(error);
-        res.json({message : 'Internal server eroor'});
-    }
-};
-
-exports.getAllCarts = async (req , res) => {
+exports.addToCart = async (req,res) => {
     try{
-        let allcarts = await Cart.find({user : req.user._id, isDelete: false});
-        res.status(200).json(allcarts);
-    }catch (error){
-        console.log(error);
-        res.json({message : 'Internal server error'});
-    }
-};
-
-
-exports.getCarts = async(req,res)=>{
-  try{
-    let id = new mongoose.Types.ObjectId(req.query.cartId);
-    let cartItem = await Cart.findById(id);
-    if(!cartItem){
-        return res.json({messge:'cart not found'});
-    }
-    res.status(200).json(cartItem);
-
-  } catch(error){
-    console.log(error);
-    res.josn({message:'internal server eroor'});
-  }   
-};
-
-exports.updateCart = async (req, res) => {
-    try {
-        const { cartId, quantity } = req.body;
-        let cartItem = await Cart.findById(cartId);
-
-        if (!cartItem) {
-            return res.json({ message: 'Cart not found' });
+        const {cartItem, quantity} = req.body;
+        let isCart = await cartModel.findOne({cartItem: cartItem, user: req.user._id});
+        if(isCart){
+            return res.json("This item already in your Cart");
         }
-
-        cartItem.quantity = quantity;
-        await cartItem.save();
-
-        res.status(200).json({ cart: cartItem, message: 'Cart item updated successfully' });
-    } catch (error) {
-        console.log(error);
-        res.json({ message: 'Internal server error' });
-    }
-};
-
-exports.deleteCart = async (req, res) => {
-    try {
-        const cartId = req.params.cartId;
-
-        let cartItem = await Cart.findById(cartId);
-
-        if (!cartItem) {
-            return res.json({ message: 'Cart not found' });
+        isCart = await cartModel.create({
+            user: req.user._id,
+            cartItem,
+            quantity
+        })
+        let isProduct = await productModel.find({_id: cartItem, isDelete: false});
+        if(!isProduct){
+            return res.send({ message: "You don't have this Product"})
         }
-
-        // Soft delete by setting isDelete to true
-        cartItem.isDelete = true;
-        await cartItem.save();
-
-        res.status(200).json({ message: 'Cart item deleted successfully' });
-    } catch (error) {
-        console.log(error);
-        res.json({ message: 'Internal server error' });
+        isCart.save();
+        res.status(201).json({cart: isCart, message: "Card added success"});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({message: "Internal Server Error"});
     }
 };
 
+exports.getallCarts = async (req,res) => {
+try {
+    let allcarts = await cartModel.find({user: req.user._id, isDelete: false});
+    res.status(200).json(allcarts);
+} catch(err){
+    console.log(err);
+    res.status(500).json({message: "Internal Server Error"});
+}
+};
 
+exports.getCart = async(req, res)=>{
+    try {
+        let id = new mongoose.Types.ObjectId(req.query.cartid);
+        let cartItem = await cartModel.findById(id);
+        if(!cartItem)
+        {
+            return res.json({message: 'cart not found'});
+        }
+        res.status(200).json(cartItem);
+    } catch(err){
+        console.log(err);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+};
 
+exports.update = async (req,res) => {
+    try{
+        let {quantity, cartId} = req.body
+        let cartItem = await cartModel.find({user: req.user._id, isDelete: false});
+        cartItem = await cartModel.findOne({_id: cartId, isDelete: false});
+        if(!cartItem){
+            return res.json({message: "No Item In Your Card"});
+        }
+        cartItem = await cartModel.findByIdAndUpdate(
+            cartId,
+            {
+                $set: {quantity: quantity}
+            },
+            {new: true}
+        )
+        cartItem.save();
+        res.json({cartItem, message: "cart is updated"});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({message: "Internal server Error"});
+    }
+};
 
+exports.deleteCart = async (req,res) => {
+    try{
+        let {cartId} = req.body
+        let cartItem = await cartModel.find({user: req.user._id, isDelete: false});
+        cartItem = await cartModel.findOne({_id: cartId, isDelete: false});
+        if(!cartItem){
+            return res.json({message: "No Item In Your Card"});
+        }
+        cartItem = await cartModel.findByIdAndUpdate(
+            cartId,
+            {
+                $set: {isDelete: true}
+            },
+            {new: true}
+        )
 
-
-
-
-
-
-
-
-
+        res.json({cartItem, message: "cart is deleted"});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({message: "Internal server Error"});
+    }
+};

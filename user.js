@@ -11,7 +11,10 @@ const productRoutes = require('./routes/product.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoute = require('./routes/order.routes');
 const authRouthes = require('./routes/auth.routes');
+const loginRoutes = require("./routes/login.routes");
 const imagepath = path.join(__dirname,'public','images');
+user.use(express.urlencoded({ extended: true}));
+user.set("view engine", 'ejs');
 
 // db connection
 async function main(){
@@ -33,6 +36,7 @@ user.use('/api/product',productRoutes)
 user.use('/api/cart',cartRoutes)
 user.use('/api/order',orderRoute);
 user.use('/api/auth',authRouthes);
+user.use('/api/login',loginRoutes);
 
 user.listen(port,()=>{
     console.log(`server start at ${port}.`)
